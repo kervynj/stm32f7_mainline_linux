@@ -1,0 +1,19 @@
+diff --git a/arch/arm/include/asm/assembler.h b/arch/arm/include/asm/assembler.h
+index b2bc8e11471d..cb6e263f731f 100644
+--- a/arch/arm/include/asm/assembler.h
++++ b/arch/arm/include/asm/assembler.h
+@@ -189,9 +189,13 @@
+ 	.irp	c,,eq,ne,cs,cc,mi,pl,vs,vc,hi,ls,ge,lt,gt,le,hs,lo
+ 	.macro	badr\c, rd, sym
+ #ifdef CONFIG_THUMB2_KERNEL
+-	adr\c	\rd, \sym + 1
++	//adr\c	\rd, \sym + 1
++        adr\c   \rd, \sym
++        orr     \rd, #1
++
+ #else
+ 	adr\c	\rd, \sym
++
+ #endif
+ 	.endm
+ 	.endr
