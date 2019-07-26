@@ -2,7 +2,15 @@ PROJECT_DIR=`pwd`
 LINUX_DIR="stm32"
 AFBOOT_DIR="afboot-stm32"
 BOARD=stm32f429i-disco
+ROOTFS_DIR="build"
 
+S=$EUID;
+
+if [ $S -ne 0 ]; then
+	echo "You are not root!";
+	exit 0
+fi
+	
 #make af-boot
 cd $AFBOOT_DIR
 make $BOARD 
@@ -13,6 +21,11 @@ cd $PROJECT_DIR/$LINUX_DIR
 make ARCH=arm CROSS_COMPILE=arm-none-eabi- CONFIGS=$PROJECT_DIR/configs/$BOARD -j 4
 
 cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
+
+#make rootfs.cpio
+cd $PROJECT_DIR/$ROOTFS_DIR
+sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+
 
 cd $PROJECT_DIR
 #flash to target
