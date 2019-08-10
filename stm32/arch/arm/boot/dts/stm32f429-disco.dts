@@ -62,7 +62,7 @@
 	};
 
 	aliases {
-		serial0 = &usart1;
+		serial0 = &usart2;
 	};
 
 	leds {
@@ -81,8 +81,8 @@
 	clock-frequency = <8000000>;
 };
 
-&usart1 {
-	pinctrl-0 = <&usart1_pins_a>;
+&usart2 {
+	pinctrl-0 = <&usart2_pins_a>;
 	pinctrl-names = "default";
 	status = "okay";
 };
