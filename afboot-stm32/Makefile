@@ -7,8 +7,8 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 SIZE = $(CROSS_COMPILE)size
 GDB = $(CROSS_COMPILE)gdb
 OPENOCD = openocd
-KERNEL_ADDR?=0x08008000
-DTB_ADDR?=0x08004000
+KERNEL_ADDR?=0x90008000
+DTB_ADDR?=0x90004000
 
 CFLAGS := -mthumb -mcpu=cortex-m4
 CFLAGS += -ffunction-sections -fdata-sections

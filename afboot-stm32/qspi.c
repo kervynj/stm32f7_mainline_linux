@@ -1,6 +1,8 @@
 #include <stdint.h>
 
 #include "qspi.h"
+#include "usart.h"
+#include "stm32f4_regs.h"
 
 void quadspi_busy_wait(void *base)
 {
@@ -66,11 +68,11 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_busy_wait(base);
 
-    *QUADSPI_CR |= QUADSPI_CR_PRESCALER(params->prescaler) | params->sshift |
+    	*QUADSPI_CR |= QUADSPI_CR_PRESCALER(params->prescaler) | params->sshift |
 		params->dfm | params->fsel;
-    *QUADSPI_DCR = params->fsize | QUADSPI_DCR_CSHT(1);
+    	*QUADSPI_DCR = params->fsize | QUADSPI_DCR_CSHT(1);
 
-    *QUADSPI_CR |= QUADSPI_CR_EN;
+    	*QUADSPI_CR |= QUADSPI_CR_EN;
 
 	/* Reset memory */
 	quadspi_busy_wait(base);
@@ -98,17 +100,17 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_wait_flag(base, QUADSPI_SR_SMF);
 
-	/* Enter 4-bytes address mode */
-	quadspi_write_enable(base);
+	/* Enter 3-bytes address mode */
+//	quadspi_write_enable(base);
 
-	quadspi_busy_wait(base);
+//	quadspi_busy_wait(base);
 
-	*QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_IDMOD_1_LINE |
-		ENTER_4_BYTE_ADDR_MODE_CMD;
+//	*QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_IDMOD_1_LINE |
+//		ENTER_3_BYTE_ADDR_MODE_CMD;
 
-	quadspi_wait_flag(base, QUADSPI_SR_TCF);
+//	quadspi_wait_flag(base, QUADSPI_SR_TCF);
 
-	quadspi_busy_wait(base);
+//	quadspi_busy_wait(base);
 
 	*QUADSPI_PSMAR = 0;
 	*QUADSPI_PSMKR = N25Q512A_SR_WIP;
@@ -139,7 +141,8 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_wait_flag(base, QUADSPI_SR_TCF);
 
-	reg = (reg & ~0xf0) | (params->dummy_cycle << 4);
+	reg = (reg & 0x07) | (params->dummy_cycle << 4);
+	//reg = (reg & ~0xf0) | (params->dummy_cycle << 4);
 
 	quadspi_write_enable(base);
 
@@ -155,13 +158,91 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_wait_flag(base, QUADSPI_SR_TCF);
 
-	quadspi_busy_wait(base);
+        /* Configure QUAD IO operation for Micron N25Q */
+
+        quadspi_busy_wait(base);
+
+        *QUADSPI_DLR = 0;
+        *QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_DMODE_1_LINE |
+                QUADSPI_CCR_IDMOD_1_LINE | READ_ENHANCED_VOL_CFG_REG_CMD;
+
+        *QUADSPI_CCR |= QUADSPI_CCR_FMODE_IND_RD;
+        *QUADSPI_AR = *QUADSPI_AR; //Needed?
+
+        while (!(*QUADSPI_SR & (QUADSPI_SR_FTF | QUADSPI_SR_TCF)));
+
+        reg = *QUADSPI_DR;
+
+        usart_putNumber(USART2_BASE, reg);
+	usart_putString(USART2_BASE, "\r\n");
+
+        quadspi_busy_wait(base);
+
+        quadspi_wait_flag(base, QUADSPI_SR_TCF);
+
+        reg = 0x7f;//(reg & (0x5f));
+
+        quadspi_write_enable(base);
+
+        quadspi_busy_wait(base);
+
+        *QUADSPI_DLR = 0;
+        *QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_DMODE_1_LINE |
+              QUADSPI_CCR_IDMOD_1_LINE | WRITE_ENHANCED_VOL_CFG_REG_CMD;
+
+        while (!(*QUADSPI_SR & QUADSPI_SR_FTF));
+
+        *QUADSPI_DR = reg;
+
+        quadspi_wait_flag(base, QUADSPI_SR_TCF);
+
+        quadspi_busy_wait(base);
+
+       /* Read Chip ID to confirm part entered Quad Mode */
+
+        //*QUADSPI_DLR = 2;
+        //*QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_DMODE_4_LINES |
+        //        QUADSPI_CCR_ADMOD_4_LINES | QUADSPI_CCR_IDMOD_4_LINES | 
+          //      0xAF;
+
+        //*QUADSPI_CCR |= QUADSPI_CCR_FMODE_IND_RD;
+        //*QUADSPI_AR = *QUADSPI_AR; //Needed?
+
+        //while (!(*QUADSPI_SR & (QUADSPI_SR_FTF | QUADSPI_SR_TCF)));
+
+        //reg = *QUADSPI_DR;
+
+        //usart_putNumber(USART2_BASE, reg);
+        //usart_putString(USART2_BASE, "\r\n");
+
+
+	/* Check first byte of kernel image in qspi */
+	
+//        *QUADSPI_DLR = 0;
+
+//        *QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_RD | QUADSPI_CCR_DMODE_1_LINE |
+//                QUADSPI_CCR_DCYC(params->dummy_cycle) | params->address_size |
+//                QUADSPI_CCR_ADMOD_1_LINE | QUADSPI_CCR_IDMOD_1_LINE |
+//                FAST_READ_CMD;
+
+//	*QUADSPI_AR = 0x8000; 
+
+
+//        quadspi_wait_flag(base, QUADSPI_SR_TCF);
+
+
+//	usart_putNumber(USART2_BASE, *QUADSPI_DR);	
+
 
 	*QUADSPI_CCR = QUADSPI_CCR_FMODE_MEMMAP | QUADSPI_CCR_DMODE_4_LINES |
-		QUADSPI_CCR_DCYC(params->dummy_cycle) | params->address_size |
-		QUADSPI_CCR_ADMOD_1_LINE | QUADSPI_CCR_IDMOD_1_LINE |
+		QUADSPI_CCR_DCYC(6) | params->address_size | 
+		QUADSPI_CCR_ADMOD_4_LINES | QUADSPI_CCR_IDMOD_4_LINES | QUADSPI_CCR_ABSIZE_8BITS | QUADSPI_CCR_ABMODE_4_LINES |  QUADSPI_CCR_SIOO_ENABLE | 
 		QUAD_OUTPUT_FAST_READ_CMD;
+	
+	unsigned char* p = (unsigned char*) 0x90004000;
+	
+	usart_putNumber(USART2_BASE, p[0]);
 
-	quadspi_busy_wait(base);
+//	quadspi_busy_wait(base);
 }
 

@@ -70,7 +70,7 @@ static void clock_setup(void)
 	/*  Enable all clocks, unused ones will be gated at end of kernel boot */
 	*RCC_AHB1ENR |= 0x7ef417ff;
 	*RCC_AHB2ENR |= 0xf1;
-	*RCC_AHB3ENR |= 0x1;
+	*RCC_AHB3ENR |= 0x3;
 	*RCC_APB1ENR |= 0xf6fec9ff;
 	*RCC_APB2ENR |= 0x4777f33;
 
@@ -101,16 +101,16 @@ int main(void)
 	volatile uint32_t *FMC_SDRTR = (void *)(FMC_BASE + 0x154);
 	volatile uint32_t *SYSCFG_MEMRMP = (void *)(SYSCFG_BASE + 0x00);
 	int i;
-//        struct qspi_params qspi_412_params = {
-//               .address_size = QUADSPI_CCR_ADSIZE_24BITS,
-//                .fifo_threshold = QUADSPI_CR_FTHRES(1),
-//                .sshift = QUADSPI_CR_SSHIFT,
-//                .fsize = QUADSPI_DCR_FSIZE_64MB,
-//                .prescaler = 1,
-//                .dummy_cycle = 10,
-//                .fsel = 0,
-//               .dfm = 0,
-//        };
+        struct qspi_params qspi_412_params = {
+                .address_size = QUADSPI_CCR_ADSIZE_24BITS,
+                .fifo_threshold = QUADSPI_CR_FTHRES(1),
+                .sshift = QUADSPI_CR_SSHIFT,
+                .fsize = QUADSPI_DCR_FSIZE_16MB,
+                .prescaler = 8,
+                .dummy_cycle = 8,
+                .fsel = 0,
+               .dfm = 0,
+        };
 
 	if (*FLASH_CR & FLASH_CR_LOCK) {
 		*FLASH_KEYR = 0x45670123;
@@ -179,14 +179,29 @@ int main(void)
 	*FMC_SDRTR = 1386 << 1; // refresh rate
 	fmc_wait_busy();
 
-	*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
+	//*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
 
 	
 	gpio_set_usart(gpio_base, 'A', 2, 7);
 	gpio_set_usart(gpio_base, 'A', 3, 7);
 
 	usart_setup(usart_base, PLLCLK_HZ/2);
-	usart_putch(usart_base, '.');
+	//usart_putch(usart_base, '.');
+	usart_putString(usart_base, "[AFBOOT]: configuring QSPI pins\n\r");
+        
+	gpio_set_qspi(gpio_base, 'G', 6, GPIOx_PUPDR_PULLUP, 0xa); //CS
+        gpio_set_qspi(gpio_base, 'B', 2, GPIOx_PUPDR_NOPULL, 0x9); //CLK
+        gpio_set_qspi(gpio_base, 'F', 8, GPIOx_PUPDR_NOPULL, 0xa); //DO
+        gpio_set_qspi(gpio_base, 'F', 9, GPIOx_PUPDR_NOPULL, 0xa); //D1
+        gpio_set_qspi(gpio_base, 'F', 7, GPIOx_PUPDR_NOPULL, 0x9); //D2
+        gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
+
+
+        usart_putString(usart_base, "[AFBOOT]: configuring QSPI memory controller\n\r");
+	quadspi_init(&qspi_412_params, (void *)QUADSPI_BASE);
+        
+	
+	usart_putString(usart_base, "[AFBOOT]: Booting Kernel\n\r");
 
 	start_kernel();
 
@@ -199,6 +214,15 @@ static void noop(void)
 	while (1) {
 	}
 }
+
+
+static void hard_fault(void)
+{
+        usart_putString(usart_base, "Hard Fault!");
+        while (1) {
+        }
+}
+
 
 extern unsigned int _end_text;
 extern unsigned int _start_data;
@@ -233,7 +257,7 @@ void (*vector_table[16 + 91])(void) = {
 	(void (*))&_stack_top,
 	reset,
 	noop,
-	noop,
+	hard_fault,
 	noop,
 	noop,
 	noop,
