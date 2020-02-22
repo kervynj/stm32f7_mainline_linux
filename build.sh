@@ -2,8 +2,8 @@ PROJECT_DIR=`pwd`
 LINUX_DIR="stm32"
 AFBOOT_DIR="afboot-stm32"
 BOARD=stm32f429i-disco
-ROOTFS_DIR="build"
-
+ROOTFS_DIR="rootfs"
+TOOLCHAIN=$PROJECT_DIR/tools/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-
 S=$EUID;
 
 if [ $S -ne 0 ]; then
@@ -13,18 +13,18 @@ fi
 	
 #make af-boot
 cd $AFBOOT_DIR
-make $BOARD 
+make $BOARD CROSS_COMPILE=$TOOLCHAIN 
 
 #make kernel
 cd $PROJECT_DIR/$LINUX_DIR
 #make ARCH=arm CROSS_COMPILE=arm-none-eabi- stm32_defconfig
-make ARCH=arm CROSS_COMPILE=arm-none-eabi- CONFIGS=$PROJECT_DIR/configs/$BOARD -j 4
+make ARCH=arm CROSS_COMPILE=$TOOLCHAIN CONFIGS=../$PROJECT_DIR/configs/$BOARD -j 4
 
 cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
 
 #make rootfs.cpio
 cd $PROJECT_DIR/$ROOTFS_DIR
-sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+#sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
 
 
 cd $PROJECT_DIR
