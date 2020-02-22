@@ -18,7 +18,7 @@ make $BOARD CROSS_COMPILE=$TOOLCHAIN
 #make kernel
 cd $PROJECT_DIR/$LINUX_DIR
 #make ARCH=arm CROSS_COMPILE=arm-none-eabi- stm32_defconfig
-make ARCH=arm CROSS_COMPILE=$TOOLCHAIN CONFIGS=../$PROJECT_DIR/configs/$BOARD -j 4
+make ARCH=arm CROSS_COMPILE=$TOOLCHAIN CONFIGS=$PROJECT_DIR/configs/$BOARD -j 4
 
 cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
 

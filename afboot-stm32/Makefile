@@ -19,7 +19,7 @@ obj-y += gpio.o mpu.o qspi.o start_kernel.o #startup.o
 obj-f4 += $(obj-y) usart-f4.o
 obj-f7 += $(obj-y) usart-f7.o
 
-all: stm32f429i-disco stm32429i-eval stm32f469i-disco stm32746g-eval stm32h743i-eval stm32f412-disco
+all: stm32f429i-disco stm32429i-eval stm32f469i-disco stm32746g-eval stm32h743i-eval stm32f412-disco stm32f756-lightning
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) -DKERNEL_ADDR=$(KERNEL_ADDR) -DDTB_ADDR=$(DTB_ADDR) $< -o $@
@@ -56,6 +56,13 @@ stm32f412-disco: stm32f412-disco.o $(obj-f4)
 	$(LD) -T stm32f412.lds $(LINKERFLAGS) -o stm32f412-disco.elf stm32f412-disco.o $(obj-f4)
 	$(OBJCOPY) -Obinary stm32f412-disco.elf stm32f412-disco.bin
 	$(SIZE) stm32f412-disco.elf
+
+
+stm32f756-lightning: stm32f756-lightning.o $(obj-f4)
+	$(LD) -T stm32f429.lds $(LINKERFLAGS) -o stm32f756-lightning.elf stm32f756-lightning.o $(obj-f4)
+	$(OBJCOPY) -Obinary stm32f756-lightning.elf stm32f756-lightning.bin
+	$(SIZE) stm32f756-lightning.elf
+
 
 clean:
 	@rm -f *.o *.elf *.bin *.lst

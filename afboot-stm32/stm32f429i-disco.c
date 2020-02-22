@@ -35,7 +35,7 @@ static void clock_setup(void)
 	volatile uint32_t *RCC_AHB1LPENR= (void *)(RCC_BASE + 0x50);
 	uint32_t val;
 
-	*RCC_CR |= RCC_CR_HSEON;
+	*RCC_CR |= RCC_CR_HSEON; //crystal used as source, enable oscillator
 	while (!(*RCC_CR & RCC_CR_HSERDY)) {
 	}
 
