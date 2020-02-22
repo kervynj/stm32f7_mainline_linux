@@ -24,7 +24,7 @@ cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arc
 
 #make rootfs.cpio
 cd $PROJECT_DIR/$ROOTFS_DIR
-#sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
 
 
 cd $PROJECT_DIR
