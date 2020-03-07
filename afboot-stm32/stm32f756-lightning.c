@@ -8,8 +8,8 @@
 #include "start_kernel.h"
 #include "qspi.h"
 
-#define CONFIG_HSE_HZ	25000000
-#define CONFIG_PLL_M	25
+#define CONFIG_HSE_HZ	8000000
+#define CONFIG_PLL_M	8
 #define CONFIG_PLL_N	432
 #define CONFIG_PLL_P	2
 #define CONFIG_PLL_Q	9
@@ -79,6 +79,7 @@ static void clock_setup(void)
 	/* togle reset QSPI */
 	*RCC_AHB3RST |= 0x2;
 	*RCC_AHB3RST &= 0xfffffffd;
+
 }
 
 
@@ -96,9 +97,13 @@ int main(void)
 	volatile uint32_t *FLASH_KEYR = (void *)(FLASH_BASE + 0x04);
 	volatile uint32_t *FLASH_CR = (void *)(FLASH_BASE + 0x10);
 	volatile uint32_t *FMC_SDCR1 = (void *)(FMC_BASE + 0x140);
+	volatile uint32_t *FMC_SDCR2 = (void *)(FMC_BASE + 0x144);
 	volatile uint32_t *FMC_SDTR1 = (void *)(FMC_BASE + 0x148);
+	volatile uint32_t *FMC_SDTR2 = (void *)(FMC_BASE + 0x14C);
 	volatile uint32_t *FMC_SDCMR = (void *)(FMC_BASE + 0x150);
 	volatile uint32_t *FMC_SDRTR = (void *)(FMC_BASE + 0x154);
+	volatile uint32_t *SYSCFG_MEMRMP = (void *)(SYSCFG_BASE + 0x00);
+
 	struct qspi_params qspi_756_params = {
 		.address_size = QUADSPI_CCR_ADSIZE_32BITS,
 		.fifo_threshold = QUADSPI_CR_FTHRES(3),
@@ -159,25 +164,26 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'C', 5); //SDCKE0
 	gpio_set_fmc(gpio_base, 'C', 4); //SDNE0
 	gpio_set_fmc(gpio_base, 'A', 7); //SDNWE
-	*FMC_SDCR1 = 0x000019E5;
-	*FMC_SDTR1 = 0x01116361;
+
+	*FMC_SDCR1 |= 0x000019D4; // 8 column address bits, 12 row address bits
+	//*FMC_SDCR2 = 0x000019D4;
+	//*FMC_SDTR1 = 0x00106000;
+	*FMC_SDTR1 = 0x01116371;
 
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00000011; // clock
 	for (i = 0; i < 50000000; i++) { // 10 ms
 		asm volatile ("nop");
 	}
-
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00000012; // PALL
 	fmc_wait_busy();
-	*FMC_SDCMR = 0x00000073; // auto-refresh
+	*FMC_SDCMR = 0x000001F3; // auto-refresh
 	fmc_wait_busy();
-	*FMC_SDCMR = 0x00046014; // external memory mode, bust length of 1, CAS latency of 3, std operation
+	*FMC_SDCMR = 0x00046014; // external memory mode, CAS latency of 3
+	*FMC_SDRTR = 1650<<1; // refresh rate
+	*FMC_SDCR1 &= 0xFFFFFDFF;
 	fmc_wait_busy();
-
-	*FMC_SDRTR |= 1700<<1; // refresh rate
-	*FMC_SDCR1 &= 0xFFFFFDFF; // disable write access?
 
 	gpio_set_qspi(gpio_base, 'B', 6, GPIOx_PUPDR_PULLUP, 0xa); //CS
 	gpio_set_qspi(gpio_base, 'B', 2, GPIOx_PUPDR_NOPULL, 0x9); //CLK
@@ -186,12 +192,26 @@ int main(void)
 	gpio_set_qspi(gpio_base, 'F', 7, GPIOx_PUPDR_NOPULL, 0x9); //D2
 	gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
 
-	quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
+	//quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
+
+	//*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
 
 	gpio_set_usart(gpio_base,'A', 9, 7);
 	gpio_set_usart(gpio_base,'A', 10, 7);
 
+
 	usart_setup(usart_base, 108000000);
+/*
+	volatile uint32_t write_pointer=0x6000c400;
+	*(uint32_t *)(write_pointer) = (uint32_t) 'd'; 
+	uint32_t val = *(uint32_t *) write_pointer;
+	usart_putch(usart_base, (val));
+
+	volatile uint32_t write_pointer2=0x60000004;
+	*(uint32_t *)(write_pointer2) = (uint32_t) 'c'; 
+	uint32_t val2 = *(uint32_t *) write_pointer2;
+	usart_putch(usart_base, (val2));
+*/
 	usart_putch(usart_base, '.');
 
 	start_kernel();

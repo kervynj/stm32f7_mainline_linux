@@ -7,8 +7,8 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 SIZE = $(CROSS_COMPILE)size
 GDB = $(CROSS_COMPILE)gdb
 OPENOCD = openocd
-KERNEL_ADDR?=0x08008000
-DTB_ADDR?=0x08004000
+KERNEL_ADDR?=0x08010000
+DTB_ADDR?=0x08008000
 
 CFLAGS := -mthumb -mcpu=cortex-m4
 CFLAGS += -ffunction-sections -fdata-sections
@@ -58,8 +58,8 @@ stm32f412-disco: stm32f412-disco.o $(obj-f4)
 	$(SIZE) stm32f412-disco.elf
 
 
-stm32f756-lightning: stm32f756-lightning.o $(obj-f4)
-	$(LD) -T stm32f429.lds $(LINKERFLAGS) -o stm32f756-lightning.elf stm32f756-lightning.o $(obj-f4)
+stm32f756-lightning: stm32f756-lightning.o $(obj-f7)
+	$(LD) -T stm32f429.lds $(LINKERFLAGS) -o stm32f756-lightning.elf stm32f756-lightning.o $(obj-f7)
 	$(OBJCOPY) -Obinary stm32f756-lightning.elf stm32f756-lightning.bin
 	$(SIZE) stm32f756-lightning.elf
 
