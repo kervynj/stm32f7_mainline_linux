@@ -37,3 +37,30 @@ void usart_putch(void *base, char ch)
 	*USART_DR = ch;
 }
 
+
+void usart_putString(void *base, int8_t * str)
+{
+  while(*str != 0)
+  {
+    usart_putch(base, *str);
+    str++;
+  }
+}
+
+
+void usart_putNumber(void *base, uint32_t x)
+{
+  char value[10]; //a temp array to hold results of conversion
+  int i = 0; //loop index
+
+  do
+  {
+    value[i++] = (char)(x % 10) + '0'; //convert integer to character
+    x /= 10;
+  } while(x);
+
+  while(i) //send data
+  {
+    usart_putch(base, value[--i]);
+  }
+}

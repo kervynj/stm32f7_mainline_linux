@@ -144,12 +144,12 @@ am__append_20 = $(ULINK_FIRMWARE) \
 am__append_21 = src/jtag/drivers/libusb1_common.c
 am__append_22 = $(LIBUSB1_CFLAGS)
 am__append_23 = $(LIBUSB1_LIBS)
-#am__append_24 = src/jtag/drivers/usb_common.c
-#am__append_25 = $(LIBUSB0_CFLAGS)
-#am__append_26 = $(LIBUSB0_LIBS)
-##am__append_27 = src/jtag/drivers/libusb0_common.c
-#am__append_28 = $(LIBFTDI_CFLAGS)
-#am__append_29 = $(LIBFTDI_LIBS)
+am__append_24 = src/jtag/drivers/usb_common.c
+am__append_25 = $(LIBUSB0_CFLAGS)
+am__append_26 = $(LIBUSB0_LIBS)
+#am__append_27 = src/jtag/drivers/libusb0_common.c
+am__append_28 = $(LIBFTDI_CFLAGS)
+am__append_29 = $(LIBFTDI_LIBS)
 #am__append_30 = $(HIDAPI_CFLAGS)
 #am__append_31 = $(HIDAPI_LIBS)
 #am__append_32 = $(LIBJAYLINK_CFLAGS)
@@ -166,17 +166,17 @@ am__append_42 = src/jtag/drivers/ftdi.c src/jtag/drivers/mpsse.c
 #am__append_43 = src/jtag/drivers/jtag_vpi.c
 am__append_44 = src/jtag/drivers/usb_blaster/libocdusbblaster.la
 am__append_45 = src/jtag/drivers/usb_blaster/libocdusbblaster.la
-#am__append_46 = src/jtag/drivers/usb_blaster/ublast_access_ftdi.c
+am__append_46 = src/jtag/drivers/usb_blaster/ublast_access_ftdi.c
 am__append_47 = src/jtag/drivers/usb_blaster/ublast2_access_libusb.c
 am__append_48 = src/jtag/drivers/ft232r.c
 #am__append_49 = src/jtag/drivers/amt_jtagaccel.c
 #am__append_50 = src/jtag/drivers/ep93xx.c
 #am__append_51 = src/jtag/drivers/at91rm9200.c
 #am__append_52 = src/jtag/drivers/gw16012.c
-#am__append_53 = src/jtag/drivers/bitq.c
-#am__append_54 = src/jtag/drivers/presto.c
-#am__append_55 = src/jtag/drivers/usbprog.c
-#am__append_56 = src/jtag/drivers/rlink.c src/jtag/drivers/rlink_speed_table.c
+am__append_53 = src/jtag/drivers/bitq.c
+am__append_54 = src/jtag/drivers/presto.c
+am__append_55 = src/jtag/drivers/usbprog.c
+am__append_56 = src/jtag/drivers/rlink.c src/jtag/drivers/rlink_speed_table.c
 am__append_57 = src/jtag/drivers/ulink.c
 am__append_58 = -lm
 am__append_59 = src/jtag/drivers/versaloon/usbtoxxx/usbtogpio.c \
@@ -186,7 +186,7 @@ am__append_59 = src/jtag/drivers/versaloon/usbtoxxx/usbtogpio.c \
 	src/jtag/drivers/versaloon/usbtoxxx/usbtoxxx.c \
 	src/jtag/drivers/versaloon/versaloon.c \
 	src/jtag/drivers/vsllink.c
-#am__append_60 = src/jtag/drivers/arm-jtag-ew.c
+am__append_60 = src/jtag/drivers/arm-jtag-ew.c
 #am__append_61 = src/jtag/drivers/buspirate.c
 #am__append_62 = src/jtag/drivers/remote_bitbang.c
 am__append_63 = src/jtag/drivers/stlink_usb.c \
@@ -196,7 +196,7 @@ am__append_65 = src/jtag/drivers/opendous.c
 #am__append_66 = src/jtag/drivers/sysfsgpio.c
 #am__append_67 = src/jtag/drivers/xlnx-pcie-xvc.c
 #am__append_68 = src/jtag/drivers/bcm2835gpio.c
-#am__append_69 = src/jtag/drivers/openjtag.c
+am__append_69 = src/jtag/drivers/openjtag.c
 #am__append_70 = src/jtag/drivers/cmsis_dap_usb.c
 #am__append_71 = src/jtag/drivers/imx_gpio.c
 #am__append_72 = src/jtag/drivers/kitprog.c
@@ -342,10 +342,10 @@ am_src_jtag_aice_libocdaice_la_rpath =
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 =  \
 	$(am__DEPENDENCIES_1)
-#am__DEPENDENCIES_3 =  \
-#	$(am__DEPENDENCIES_1)
-#am__DEPENDENCIES_4 =  \
-#	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_3 =  \
+	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_4 =  \
+	$(am__DEPENDENCIES_1)
 #am__DEPENDENCIES_5 =  \
 #	$(am__DEPENDENCIES_1)
 #am__DEPENDENCIES_6 =  \
@@ -398,8 +398,8 @@ am__src_jtag_drivers_libocdjtagdrivers_la_SOURCES_DIST =  \
 	src/jtag/drivers/versaloon/versaloon_include.h \
 	src/jtag/drivers/versaloon/versaloon_internal.h
 am__objects_6 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-libusb1_common.lo
-#am__objects_7 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-usb_common.lo
-##am__objects_8 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-libusb0_common.lo
+am__objects_7 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-usb_common.lo
+#am__objects_8 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-libusb0_common.lo
 am__objects_9 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-jlink.lo
 #am__objects_10 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-bitbang.lo
 #am__objects_11 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-parport.lo
@@ -412,11 +412,11 @@ am__objects_15 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-ft232r.l
 #am__objects_17 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-ep93xx.lo
 #am__objects_18 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-at91rm9200.lo
 #am__objects_19 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-gw16012.lo
-#am__objects_20 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-bitq.lo
-#am__objects_21 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-presto.lo
-#am__objects_22 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-usbprog.lo
-#am__objects_23 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-rlink.lo \
-#	src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-rlink_speed_table.lo
+am__objects_20 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-bitq.lo
+am__objects_21 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-presto.lo
+am__objects_22 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-usbprog.lo
+am__objects_23 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-rlink.lo \
+	src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-rlink_speed_table.lo
 am__objects_24 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-ulink.lo
 am__objects_25 = src/jtag/drivers/versaloon/usbtoxxx/src_jtag_drivers_libocdjtagdrivers_la-usbtogpio.lo \
 	src/jtag/drivers/versaloon/usbtoxxx/src_jtag_drivers_libocdjtagdrivers_la-usbtojtagraw.lo \
@@ -425,7 +425,7 @@ am__objects_25 = src/jtag/drivers/versaloon/usbtoxxx/src_jtag_drivers_libocdjtag
 	src/jtag/drivers/versaloon/usbtoxxx/src_jtag_drivers_libocdjtagdrivers_la-usbtoxxx.lo \
 	src/jtag/drivers/versaloon/src_jtag_drivers_libocdjtagdrivers_la-versaloon.lo \
 	src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-vsllink.lo
-#am__objects_26 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-arm-jtag-ew.lo
+am__objects_26 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-arm-jtag-ew.lo
 #am__objects_27 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-buspirate.lo
 #am__objects_28 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-remote_bitbang.lo
 am__objects_29 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-stlink_usb.lo \
@@ -435,7 +435,7 @@ am__objects_31 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-opendous
 #am__objects_32 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-sysfsgpio.lo
 #am__objects_33 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-xlnx-pcie-xvc.lo
 #am__objects_34 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-bcm2835gpio.lo
-#am__objects_35 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-openjtag.lo
+am__objects_35 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-openjtag.lo
 #am__objects_36 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-cmsis_dap_usb.lo
 #am__objects_37 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-imx_gpio.lo
 #am__objects_38 = src/jtag/drivers/src_jtag_drivers_libocdjtagdrivers_la-kitprog.lo
@@ -470,7 +470,7 @@ am__src_jtag_drivers_usb_blaster_libocdusbblaster_la_SOURCES_DIST =  \
 	src/jtag/drivers/usb_blaster/ublast_access.h \
 	src/jtag/drivers/usb_blaster/ublast_access_ftdi.c \
 	src/jtag/drivers/usb_blaster/ublast2_access_libusb.c
-#am__objects_41 = src/jtag/drivers/usb_blaster/src_jtag_drivers_usb_blaster_libocdusbblaster_la-ublast_access_ftdi.lo
+am__objects_41 = src/jtag/drivers/usb_blaster/src_jtag_drivers_usb_blaster_libocdusbblaster_la-ublast_access_ftdi.lo
 am__objects_42 = src/jtag/drivers/usb_blaster/src_jtag_drivers_usb_blaster_libocdusbblaster_la-ublast2_access_libusb.lo
 am__objects_43 = src/jtag/drivers/usb_blaster/src_jtag_drivers_usb_blaster_libocdusbblaster_la-usb_blaster.lo \
 	$(am__objects_41) \
@@ -973,13 +973,13 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/jim/Documents/openocd-code/missing aclocal-1.14
+ACLOCAL = ${SHELL} /home/jim/workspace/stm32f429_mainline_linux/openocd-code/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /home/jim/Documents/openocd-code/missing autoconf
-AUTOHEADER = ${SHELL} /home/jim/Documents/openocd-code/missing autoheader
-AUTOMAKE = ${SHELL} /home/jim/Documents/openocd-code/missing automake-1.14
+AUTOCONF = ${SHELL} /home/jim/workspace/stm32f429_mainline_linux/openocd-code/missing autoconf
+AUTOHEADER = ${SHELL} /home/jim/workspace/stm32f429_mainline_linux/openocd-code/missing autoheader
+AUTOMAKE = ${SHELL} /home/jim/workspace/stm32f429_mainline_linux/openocd-code/missing automake-1.14
 AWK = gawk
 CC = gcc -std=gnu99
 CCDEPMODE = depmode=gcc3
@@ -1010,16 +1010,16 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
-LIBFTDI_CFLAGS = 
-LIBFTDI_LIBS = 
+LIBFTDI_CFLAGS =  
+LIBFTDI_LIBS = -lftdi  
 LIBJAYLINK_CFLAGS = 
 LIBJAYLINK_LIBS = 
 LIBOBJS = 
 LIBS = -ldl 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIBTOOL_DEPS = ./ltmain.sh
-LIBUSB0_CFLAGS = 
-LIBUSB0_LIBS = 
+LIBUSB0_CFLAGS =  
+LIBUSB0_LIBS = -lusb  
 LIBUSB1_CFLAGS = -isystem /usr/include/libusb-1.0
 LIBUSB1_LIBS = -lusb-1.0  
 LIPO = 
@@ -1051,10 +1051,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.10.0+dev
-abs_builddir = /home/jim/Documents/openocd-code
-abs_srcdir = /home/jim/Documents/openocd-code
-abs_top_builddir = /home/jim/Documents/openocd-code
-abs_top_srcdir = /home/jim/Documents/openocd-code
+abs_builddir = /home/jim/workspace/stm32f429_mainline_linux/openocd-code
+abs_srcdir = /home/jim/workspace/stm32f429_mainline_linux/openocd-code
+abs_top_builddir = /home/jim/workspace/stm32f429_mainline_linux/openocd-code
+abs_top_srcdir = /home/jim/workspace/stm32f429_mainline_linux/openocd-code
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -1085,7 +1085,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/jim/Documents/openocd-code/install-sh
+install_sh = ${SHELL} /home/jim/workspace/stm32f429_mainline_linux/openocd-code/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale

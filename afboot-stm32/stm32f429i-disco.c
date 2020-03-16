@@ -176,6 +176,32 @@ int main(void)
 	usart_setup(usart_base, PLLCLK_HZ/2);
 	usart_putch(usart_base, '.');
 
+	volatile unsigned long *sdram = (unsigned long *)0x90000000;
+	i=0;
+
+	for(i=0; i < 0x200000; i++)
+	{
+	sdram[i]=i;
+	}
+	usart_putch(usart_base, 'S');
+
+	for(i=0; i < 0x200000; i++)
+	{
+		if (sdram[i] != i)
+		{
+			usart_putString(usart_base, "i[");
+			usart_putNumber(usart_base, i);
+			usart_putString(usart_base, "]=\t");
+			usart_putNumber(usart_base, sdram[i]);
+			usart_putString(usart_base, "\n\r");
+		}
+	}
+
+	usart_putString(usart_base, "DONE");	
+
+	while(1){
+	}
+
 	start_kernel();
 
 	return 0;

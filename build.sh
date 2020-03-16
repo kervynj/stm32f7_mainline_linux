@@ -1,7 +1,8 @@
 PROJECT_DIR=`pwd`
-LINUX_DIR="stm32"
+LINUX_DIR="linux-5.6-rc5"
 AFBOOT_DIR="afboot-stm32"
-BOARD=stm32f429i-disco
+STLINK_DIR="stlink.git"
+BOARD="stm32f756-lightning"
 ROOTFS_DIR="rootfs"
 TOOLCHAIN=$PROJECT_DIR/tools/gcc-arm-none-eabi-4_9-2015q3/bin/arm-none-eabi-
 S=$EUID;
@@ -15,29 +16,33 @@ fi
 cd $AFBOOT_DIR
 make $BOARD CROSS_COMPILE=$TOOLCHAIN 
 
-#make kernel
-cd $PROJECT_DIR/$LINUX_DIR
-#make ARCH=arm CROSS_COMPILE=arm-none-eabi- stm32_defconfig
-make ARCH=arm CROSS_COMPILE=$TOOLCHAIN CONFIGS=$PROJECT_DIR/configs/$BOARD -j 4
+cd $PROJECT_DIR
+#check for linux directory
+if [ -d $LINUX_DIR ]
+then
+	echo "Linux 5.6-rc5 exists"
+else
+	echo "Downloading Linux 5.6-rc5"
+	$(wget https://github.com/torvalds/linux/archive/v5.6-rc5.tar.gz)
+	tar -xzvf "v5.6-rc5.tar.gz"
+fi
 
-cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
 
 #make rootfs.cpio
 cd $PROJECT_DIR/$ROOTFS_DIR
-sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+#sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+ls | cpio -ov > rootfs.cpio
+
+#make kernel
+cd $PROJECT_DIR/$LINUX_DIR
+cp $PROJECT_DIR/configs/$BOARD .config
+make ARCH=arm CROSS_COMPILE=$TOOLCHAIN -j 10
+cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
 
 
 cd $PROJECT_DIR
 #flash to target
-
-openocd -f  board/stm32f429discovery.cfg \
- -c "init" \
- -c "reset init" \
- -c "flash probe 0" \
- -c "flash info 0" \
- -c "flash write_image erase $PROJECT_DIR/$AFBOOT_DIR/$BOARD.bin 0x08000000" \
- -c "flash write_image erase $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin 0x08008000" \
- -c "flash write_image erase $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/dts/stm32f429-disco.dtb 0x08004000" \
- -c "reset run" \
- -c "shutdown"
-
+../$STLINK_DIR/build/Release/st-flash erase
+../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$AFBOOT_DIR/$BOARD.bin 0x08000000
+../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin 0x08010000
+../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/dts/stm32f769-disco.dtb 0x8008000

@@ -12,7 +12,7 @@
 #define CONFIG_PLL_M	8
 #define CONFIG_PLL_N	432
 #define CONFIG_PLL_P	2
-#define CONFIG_PLL_Q	9
+#define CONFIG_PLL_Q	3
 #define PLLCLK_HZ (((CONFIG_HSE_HZ / CONFIG_PLL_M) * CONFIG_PLL_N) / CONFIG_PLL_P)
 #if PLLCLK_HZ == 216000000
 #define FLASH_LATENCY	9
@@ -116,7 +116,7 @@ int main(void)
 	};
 	int i;
 
-	mpu_config(0xc0000000);
+	mpu_config(0x60000000);
 
 	if (*FLASH_CR & FLASH_CR_LOCK) { //unlock flash control register
 		*FLASH_KEYR = 0x45670123;
@@ -127,7 +127,7 @@ int main(void)
 	*FLASH_CR |= FLASH_CR_LOCK; // lock flash control register
 
 	clock_setup();
-
+		
 	gpio_set_fmc(gpio_base, 'D', 0); //D2
 	gpio_set_fmc(gpio_base, 'D', 1); //D3
 	gpio_set_fmc(gpio_base, 'D', 8); //D13
@@ -149,7 +149,7 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'F', 0); //A0
 	gpio_set_fmc(gpio_base, 'F', 1); //A1
 	gpio_set_fmc(gpio_base, 'F', 2); //A2
-	gpio_set_fmc(gpio_base, 'F', 3); //A3
+	gpio_set_fmc(gpio_base, 'F', 3); //A3	
 	gpio_set_fmc(gpio_base, 'F', 4); //A4
 	gpio_set_fmc(gpio_base, 'F', 5); //A5
 	gpio_set_fmc(gpio_base, 'F', 11); //SDNRAS
@@ -159,16 +159,20 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'F', 15); //A9
 	gpio_set_fmc(gpio_base, 'G', 0); //A10
 	gpio_set_fmc(gpio_base, 'G', 1); //A11
+	gpio_set_fmc(gpio_base, 'G', 4);
+	gpio_set_fmc(gpio_base, 'G', 5);
+	gpio_set_alt(gpio_base, 'G', 8, 0, 0x3, 2, 0xC);
 	gpio_set_fmc(gpio_base, 'G', 8); //SDCLK
 	gpio_set_fmc(gpio_base, 'G', 15); //SDNCAS
 	gpio_set_fmc(gpio_base, 'C', 5); //SDCKE0
 	gpio_set_fmc(gpio_base, 'C', 4); //SDNE0
 	gpio_set_fmc(gpio_base, 'A', 7); //SDNWE
 
-	*FMC_SDCR1 |= 0x000019D4; // 8 column address bits, 12 row address bits
+	*FMC_SDCR1 = 0x00000954; // 8 column address bits, 12 row address bits
+	*FMC_SDCR1 |= (3 << 10); // 8 column address bits, 12 row address bits
 	//*FMC_SDCR2 = 0x000019D4;
 	//*FMC_SDTR1 = 0x00106000;
-	*FMC_SDTR1 = 0x01116371;
+	*FMC_SDTR1 = 0x0001116361; // 0x01116371
 
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00000011; // clock
@@ -178,10 +182,11 @@ int main(void)
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00000012; // PALL
 	fmc_wait_busy();
-	*FMC_SDCMR = 0x000001F3; // auto-refresh
+	*FMC_SDCMR = 0x000000F3; // auto-refresh
 	fmc_wait_busy();
-	*FMC_SDCMR = 0x00046014; // external memory mode, CAS latency of 3
-	*FMC_SDRTR = 1650<<1; // refresh rate
+	*FMC_SDCMR = 0x00044014; // external memory mode, CAS latency of 3
+	*FMC_SDCMR |= (2 << 13); // external memory mode, CAS latency of 3
+	*FMC_SDRTR = 1230<<1; // refresh rate
 	*FMC_SDCR1 &= 0xFFFFFDFF;
 	fmc_wait_busy();
 
@@ -194,13 +199,13 @@ int main(void)
 
 	//quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
 
-	//*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
+	*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
 
 	gpio_set_usart(gpio_base,'A', 9, 7);
 	gpio_set_usart(gpio_base,'A', 10, 7);
 
 
-	usart_setup(usart_base, 108000000);
+	usart_setup(usart_base, PLLCLK_HZ/2);
 /*
 	volatile uint32_t write_pointer=0x6000c400;
 	*(uint32_t *)(write_pointer) = (uint32_t) 'd'; 
@@ -212,6 +217,39 @@ int main(void)
 	uint32_t val2 = *(uint32_t *) write_pointer2;
 	usart_putch(usart_base, (val2));
 */
+
+	volatile uint32_t *FMC_BCR1 = (uint32_t *)FMC_BASE;
+
+	*FMC_BCR1 &= (0xFFDFFEFF); // disable FIFO
+
+	
+	volatile uint32_t *sdram = (uint32_t *)0x60000000;
+	i=0;
+
+	usart_putString(usart_base, "starting mem test\t\n\r");
+
+
+	for(i=0x000000; i < 0x200000; i++)
+	{
+	sdram[i]=i;
+	}
+
+	for(i=0x000000; i < 0x200000; i++)
+	{
+		if(sdram[i] !=i)
+		{
+		usart_putString(usart_base, "i[");
+		usart_putNumber(usart_base, i);
+		usart_putString(usart_base, "]=");
+		usart_putNumber(usart_base, sdram[i]);
+		usart_putString(usart_base, "\n\r");
+		}
+	}
+
+
+
+usart_putString(usart_base, "Done.\n\r");
+	
 	usart_putch(usart_base, '.');
 
 	start_kernel();
