@@ -29,13 +29,13 @@ fi
 
 
 #make rootfs.cpio
-cd $PROJECT_DIR/$ROOTFS_DIR
-#sudo find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
-ls | cpio -ov > rootfs.cpio
+chown -h -R 0:0 $PROJECT_DIR/$ROOTFS_DIR
+cd $PROJECT_DIR/$ROOTFS_DIR && find . | cpio --quiet -o -H newc > $PROJECT_DIR/rootfs.cpio
+#ls | cpio -ov > rootfs.cpio
 
 #make kernel
 cd $PROJECT_DIR/$LINUX_DIR
-cp $PROJECT_DIR/configs/$BOARD .config
+#cp $PROJECT_DIR/configs/$BOARD .config
 make ARCH=arm CROSS_COMPILE=$TOOLCHAIN -j 10
 cat $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage > $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin
 
@@ -44,5 +44,5 @@ cd $PROJECT_DIR
 #flash to target
 ../$STLINK_DIR/build/Release/st-flash erase
 ../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$AFBOOT_DIR/$BOARD.bin 0x08000000
-../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin 0x08010000
+#../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/xipImage.bin 0x08010000
 ../$STLINK_DIR/build/Release/st-flash write $PROJECT_DIR/$LINUX_DIR/arch/arm/boot/dts/stm32f769-disco.dtb 0x8008000

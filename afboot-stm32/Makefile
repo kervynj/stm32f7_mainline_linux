@@ -7,7 +7,7 @@ OBJDUMP = $(CROSS_COMPILE)objdump
 SIZE = $(CROSS_COMPILE)size
 GDB = $(CROSS_COMPILE)gdb
 OPENOCD = openocd
-KERNEL_ADDR?=0x08010000
+KERNEL_ADDR?=0x90000000
 DTB_ADDR?=0x08008000
 
 CFLAGS := -mthumb -mcpu=cortex-m4
@@ -15,7 +15,7 @@ CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -Os -std=gnu99 -Wall
 LINKERFLAGS := -nostartupfiles --gc-sections
 
-obj-y += gpio.o mpu.o qspi.o start_kernel.o #startup.o 
+obj-y += gpio.o mpu.o qspi.o sdmmc.o start_kernel.o #startup.o 
 obj-f4 += $(obj-y) usart-f4.o
 obj-f7 += $(obj-y) usart-f7.o
 

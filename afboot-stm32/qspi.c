@@ -1,6 +1,7 @@
 #include <stdint.h>
-
 #include "qspi.h"
+#include "usart.h"
+#include "stm32f4_regs.h"
 
 void quadspi_busy_wait(void *base)
 {
@@ -62,6 +63,14 @@ void quadspi_init(struct qspi_params *params, void *base)
 	volatile uint32_t *QUADSPI_PIR		= base + 0x2c;
 	uint32_t reg;
 
+	usart_putString(USART2_BASE, "configuring QSPI\n\r");	
+
+	if (*QUADSPI_CCR & (QUADSPI_CCR_FMODE_MEMMAP))
+	{
+		usart_putString(USART2_BASE, "QSPI has already been configured!\n\r");
+		return 0;
+	}
+
 	*QUADSPI_CR = params->fifo_threshold;
 
 	quadspi_busy_wait(base);
@@ -88,8 +97,8 @@ void quadspi_init(struct qspi_params *params, void *base)
 	quadspi_busy_wait(base);
 
 	*QUADSPI_PSMAR = 0;
-	*QUADSPI_PSMKR = N25Q512A_SR_WIP;
-	*QUADSPI_PIR = 0x10;
+	*QUADSPI_PSMKR = N25Q512A_SR_WIP; // common for MICRON, OK for MT25Q
+	*QUADSPI_PIR = 0x20;
 
 	*QUADSPI_CR |= QUADSPI_CR_AMPS;
 	*QUADSPI_DLR = 0;
@@ -98,48 +107,12 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_wait_flag(base, QUADSPI_SR_SMF);
 
-	/* Enter 4-bytes address mode */
+	/* Configure volatile Configuration register */
 	quadspi_write_enable(base);
 
 	quadspi_busy_wait(base);
 
-	*QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_IDMOD_1_LINE |
-		ENTER_4_BYTE_ADDR_MODE_CMD;
-
-	quadspi_wait_flag(base, QUADSPI_SR_TCF);
-
-	quadspi_busy_wait(base);
-
-	*QUADSPI_PSMAR = 0;
-	*QUADSPI_PSMKR = N25Q512A_SR_WIP;
-	*QUADSPI_PIR = 0x10;
-
-	*QUADSPI_CR |= QUADSPI_CR_AMPS;
-	*QUADSPI_DLR = 0;
-	*QUADSPI_CCR = QUADSPI_CCR_FMODE_AUTO_POLL | QUADSPI_CCR_DMODE_1_LINE |
-		QUADSPI_CCR_IDMOD_1_LINE | READ_STATUS_REG_CMD;
-
-	quadspi_wait_flag(base, QUADSPI_SR_SMF);
-
-	/* Configure dummy cycles on memory side */
-
-	quadspi_busy_wait(base);
-
-	*QUADSPI_DLR = 0;
-	*QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_DMODE_1_LINE |
-		QUADSPI_CCR_IDMOD_1_LINE | READ_VOL_CFG_REG_CMD;
-
-	*QUADSPI_CCR |= QUADSPI_CCR_FMODE_IND_RD;
-
-	*QUADSPI_AR = *QUADSPI_AR; //Needed?
-
-	while (!(*QUADSPI_SR & (QUADSPI_SR_FTF | QUADSPI_SR_TCF)));
-
-	reg = *QUADSPI_DR;
-
-	quadspi_wait_flag(base, QUADSPI_SR_TCF);
-
-	reg = (reg & ~0xf0) | (params->dummy_cycle << 4);
+	reg = (0x03) | (params->dummy_cycle << 4); // configure dummy cycles, EN XIP mode (bit 3)
 
 	quadspi_write_enable(base);
 
@@ -157,10 +130,38 @@ void quadspi_init(struct qspi_params *params, void *base)
 
 	quadspi_busy_wait(base);
 
+	// set enhanced volatile config register, 20R output drive strength, Quad I/O
+
+        reg = 0x7f;
+
+        quadspi_write_enable(base);
+
+        quadspi_busy_wait(base);
+
+        *QUADSPI_DLR = 0; // write 1-byte
+        *QUADSPI_CCR = QUADSPI_CCR_FMODE_IND_WR | QUADSPI_CCR_DMODE_1_LINE |
+              QUADSPI_CCR_IDMOD_1_LINE | WRITE_ENHANCED_VOL_CFG_REG_CMD;
+
+        while (!(*QUADSPI_SR & QUADSPI_SR_FTF));
+
+        *QUADSPI_DR = reg;
+
+        quadspi_wait_flag(base, QUADSPI_SR_TCF);
+
+	quadspi_busy_wait(base);
+
+//	*QUADSPI_CCR = QUADSPI_CCR_FMODE_MEMMAP | QUADSPI_CCR_DMODE_4_LINES |
+//		QUADSPI_CCR_DCYC(params->dummy_cycle) | params->address_size |
+//		QUADSPI_CCR_ADMOD_1_LINE | QUADSPI_CCR_IDMOD_1_LINE |
+//		QUAD_OUTPUT_FAST_READ_CMD;
+
+	// configure quad mode, enter XIP
+
+	//*QUADSPI_CR &= (0xffffffef); // clear sshift bit
+	
 	*QUADSPI_CCR = QUADSPI_CCR_FMODE_MEMMAP | QUADSPI_CCR_DMODE_4_LINES |
-		QUADSPI_CCR_DCYC(params->dummy_cycle) | params->address_size |
-		QUADSPI_CCR_ADMOD_1_LINE | QUADSPI_CCR_IDMOD_1_LINE |
-		QUAD_OUTPUT_FAST_READ_CMD;
+		QUADSPI_CCR_DCYC(6) | params->address_size | 
+		QUADSPI_CCR_ADMOD_4_LINES | QUADSPI_CCR_IDMOD_4_LINES | QUADSPI_CCR_ABSIZE_8BITS | QUADSPI_CCR_ABMODE_4_LINES | 		   	QUADSPI_CCR_SIOO_ENABLE | QUADSPI_CCR_SDR | QUAD_OUTPUT_FAST_READ_CMD;
 
 	quadspi_busy_wait(base);
 }

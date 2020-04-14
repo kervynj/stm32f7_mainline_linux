@@ -52,6 +52,7 @@
 
 #define FMC_BASE	0xA0000000
 #define QUADSPI_BASE	0xA0001000
+#define SDMMC_BASE	0x40012c00
 
 #define FMC_SDSR_BUSY	(1 << 5)
 

@@ -7,12 +7,13 @@
 #include "mpu.h"
 #include "start_kernel.h"
 #include "qspi.h"
+#include "sdmmc.h"
 
 #define CONFIG_HSE_HZ	8000000
 #define CONFIG_PLL_M	8
 #define CONFIG_PLL_N	432
 #define CONFIG_PLL_P	2
-#define CONFIG_PLL_Q	3
+#define CONFIG_PLL_Q	9
 #define PLLCLK_HZ (((CONFIG_HSE_HZ / CONFIG_PLL_M) * CONFIG_PLL_N) / CONFIG_PLL_P)
 #if PLLCLK_HZ == 216000000
 #define FLASH_LATENCY	9
@@ -44,7 +45,7 @@ static void clock_setup(void)
 
 	val = *RCC_CFGR;
 	val &= ~RCC_CFGR_HPRE_MASK; 	//AHB clock 216MHz
-	//val |= 0 << 4; // not divided
+	//val |= 1 << 4; // not divided
 	val &= ~RCC_CFGR_PPRE1_MASK; 	// APB1 set for 54MHz
 	val |= 0x5 << 10; // divided by 4
 	val &= ~RCC_CFGR_PPRE2_MASK; 	//APB2 set for 108MHz
@@ -74,7 +75,7 @@ static void clock_setup(void)
 	*RCC_AHB2ENR |= 0xf1;
 	*RCC_AHB3ENR |= 0x3;
 	*RCC_APB1ENR |= 0xf6fec9ff;
-	*RCC_APB2ENR |= 0x4777f33;
+	*RCC_APB2ENR |= 0x4777fB3;
 
 	/* togle reset QSPI */
 	*RCC_AHB3RST |= 0x2;
@@ -105,16 +106,17 @@ int main(void)
 	volatile uint32_t *SYSCFG_MEMRMP = (void *)(SYSCFG_BASE + 0x00);
 
 	struct qspi_params qspi_756_params = {
-		.address_size = QUADSPI_CCR_ADSIZE_32BITS,
+		.address_size = QUADSPI_CCR_ADSIZE_24BITS,
 		.fifo_threshold = QUADSPI_CR_FTHRES(3),
 		.sshift = QUADSPI_CR_SSHIFT,
-		.fsize = QUADSPI_DCR_FSIZE_64MB,
+		.fsize = QUADSPI_DCR_FSIZE(22), // 8MB memory
 		.prescaler = 1,
-		.dummy_cycle = 10,
+		.dummy_cycle = 8,
 		.fsel = 0,
 		.dfm = 0,
 	};
 	int i;
+
 
 	mpu_config(0x60000000);
 
@@ -127,6 +129,10 @@ int main(void)
 	*FLASH_CR |= FLASH_CR_LOCK; // lock flash control register
 
 	clock_setup();
+
+	gpio_set_usart(gpio_base,'A', 9, 7);
+	gpio_set_usart(gpio_base,'A', 10, 7);
+	usart_setup(usart_base, PLLCLK_HZ/2);
 		
 	gpio_set_fmc(gpio_base, 'D', 0); //D2
 	gpio_set_fmc(gpio_base, 'D', 1); //D3
@@ -159,8 +165,8 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'F', 15); //A9
 	gpio_set_fmc(gpio_base, 'G', 0); //A10
 	gpio_set_fmc(gpio_base, 'G', 1); //A11
-	gpio_set_fmc(gpio_base, 'G', 4);
-	gpio_set_fmc(gpio_base, 'G', 5);
+	gpio_set_fmc(gpio_base, 'G', 4); //BA0
+	gpio_set_fmc(gpio_base, 'G', 5); //BA1
 	gpio_set_alt(gpio_base, 'G', 8, 0, 0x3, 2, 0xC);
 	gpio_set_fmc(gpio_base, 'G', 8); //SDCLK
 	gpio_set_fmc(gpio_base, 'G', 15); //SDNCAS
@@ -168,11 +174,9 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'C', 4); //SDNE0
 	gpio_set_fmc(gpio_base, 'A', 7); //SDNWE
 
-	*FMC_SDCR1 = 0x00000954; // 8 column address bits, 12 row address bits
-	*FMC_SDCR1 |= (3 << 10); // 8 column address bits, 12 row address bits
-	//*FMC_SDCR2 = 0x000019D4;
-	//*FMC_SDTR1 = 0x00106000;
-	*FMC_SDTR1 = 0x0001116361; // 0x01116371
+	*FMC_SDCR1 = 0x00000954; //0x954 
+	*FMC_SDCR1 |= (2 << 10); 
+	*FMC_SDTR1 = 0x0001116361; 
 
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00000011; // clock
@@ -186,7 +190,7 @@ int main(void)
 	fmc_wait_busy();
 	*FMC_SDCMR = 0x00044014; // external memory mode, CAS latency of 3
 	*FMC_SDCMR |= (2 << 13); // external memory mode, CAS latency of 3
-	*FMC_SDRTR = 1230<<1; // refresh rate
+	*FMC_SDRTR = 1630<<1; // refresh rate 
 	*FMC_SDCR1 &= 0xFFFFFDFF;
 	fmc_wait_busy();
 
@@ -197,26 +201,29 @@ int main(void)
 	gpio_set_qspi(gpio_base, 'F', 7, GPIOx_PUPDR_NOPULL, 0x9); //D2
 	gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
 
-	//quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
 
+	quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
+	usart_putString(usart_base, "QSPI init Done.");
+
+
+	//init SDMMC
+
+	gpio_set(gpio_base, 'E', 2,  1, 0, 2, 1);
+	gpio_set_alt(gpio_base, 'C', 8,  0, 0x3, 0, 0xC);
+	gpio_set_alt(gpio_base, 'C', 9,  0, 0x3, 1, 0xC);
+	gpio_set_alt(gpio_base, 'C', 10, 0, 0x3, 1, 0xC);
+	gpio_set_alt(gpio_base, 'C', 11, 0, 0x3, 1, 0xC);
+	gpio_set_alt(gpio_base, 'C', 12, 0, 0x3, 1, 0xC);	
+	gpio_set_alt(gpio_base, 'D', 2,  0, 0x3, 1, 0xC);
+
+	sdmmc_init((void *) SDMMC_BASE);
+
+	volatile uint32_t *qspi = (uint32_t *)0x90000000;
+
+	//qspi[0]=0xf;
+	//usart_putNumber(usart_base, qspi[0]);
+	
 	*SYSCFG_MEMRMP = SYSCFG_MEMRMP_SWP_FMC << 10;
-
-	gpio_set_usart(gpio_base,'A', 9, 7);
-	gpio_set_usart(gpio_base,'A', 10, 7);
-
-
-	usart_setup(usart_base, PLLCLK_HZ/2);
-/*
-	volatile uint32_t write_pointer=0x6000c400;
-	*(uint32_t *)(write_pointer) = (uint32_t) 'd'; 
-	uint32_t val = *(uint32_t *) write_pointer;
-	usart_putch(usart_base, (val));
-
-	volatile uint32_t write_pointer2=0x60000004;
-	*(uint32_t *)(write_pointer2) = (uint32_t) 'c'; 
-	uint32_t val2 = *(uint32_t *) write_pointer2;
-	usart_putch(usart_base, (val2));
-*/
 
 	volatile uint32_t *FMC_BCR1 = (uint32_t *)FMC_BASE;
 
@@ -248,7 +255,7 @@ int main(void)
 
 
 
-usart_putString(usart_base, "Done.\n\r");
+	usart_putString(usart_base, "Done.\n\r");
 	
 	usart_putch(usart_base, '.');
 

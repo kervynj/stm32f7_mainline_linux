@@ -5,3 +5,5 @@ exec 0</dev/console
 exec 1>/dev/console
 exec 2>/dev/console
 exec /sbin/init "$@"
+sh /run/run.sh
+/bin/mount -t ext3 /dev/mmcblk0p1 /mnt/

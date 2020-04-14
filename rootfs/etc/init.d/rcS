@@ -1,0 +1,5 @@
+#!/bin/sh
+gpioset gpiochip2 3=1
+#stty -F /dev/ttySTM1 -echo -onlcr
+stty -F /dev/ttySTM1 9600 cs8 -cstopb -parenb -echo -onclr
+/bin/mount -t ext3 /dev/mmcblk0p1 /media/
