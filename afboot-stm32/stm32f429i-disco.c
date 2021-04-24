@@ -199,9 +199,7 @@ int main(void)
 
 	usart_putString(usart_base, "DONE");	
 
-	while(1){
-	}
-
+	
 	start_kernel();
 
 	return 0;

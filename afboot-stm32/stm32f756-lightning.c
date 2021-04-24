@@ -174,7 +174,7 @@ int main(void)
 	gpio_set_fmc(gpio_base, 'C', 4); //SDNE0
 	gpio_set_fmc(gpio_base, 'A', 7); //SDNWE
 
-	*FMC_SDCR1 = 0x00000954; //0x954 
+	*FMC_SDCR1 = 0x00000955; //0x954 
 	*FMC_SDCR1 |= (2 << 10); 
 	*FMC_SDTR1 = 0x0001116361; 
 
@@ -202,6 +202,8 @@ int main(void)
 	gpio_set_qspi(gpio_base, 'F', 6, GPIOx_PUPDR_NOPULL, 0x9); //D3
 
 
+
+	//gpio_data_set(gpio_base, 'F', 6, 1);
 	quadspi_init(&qspi_756_params, (void *)QUADSPI_BASE);
 	usart_putString(usart_base, "QSPI init Done.");
 
@@ -236,12 +238,12 @@ int main(void)
 	usart_putString(usart_base, "starting mem test\t\n\r");
 
 
-	for(i=0x000000; i < 0x200000; i++)
+	for(i=0x000000; i < 0x400000; i++)
 	{
 	sdram[i]=i;
 	}
 
-	for(i=0x000000; i < 0x200000; i++)
+	for(i=0x000000; i < 0x400000; i++)
 	{
 		if(sdram[i] !=i)
 		{

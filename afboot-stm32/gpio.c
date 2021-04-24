@@ -1,5 +1,4 @@
 #include <stdint.h>
-
 #include "gpio.h"
 
 void gpio_set(void *base, char bank, uint8_t port,
@@ -23,6 +22,18 @@ void gpio_set(void *base, char bank, uint8_t port,
 	*GPIOx_OSPEEDR |= (uint32_t)ospeed << i;
 	*GPIOx_PUPDR &= ~(GPIOx_PUPDR_PUPDRy_MASK << i);
 	*GPIOx_PUPDR |= (uint32_t)pupd << i;
+}
+
+
+void gpio_data_set(void *base, char bank, uint8_t port, int val)
+{
+        volatile uint32_t *GPIOx_base    = (base + (bank - 'A') * 0x400);
+	volatile uint32_t *GPIOx_ODR	 = (void *)GPIOx_base + 0x14;
+	int i;
+
+	i = port;
+
+	*GPIOx_ODR |= (uint32_t)val << i;
 }
 
 void gpio_set_alt(void *base, char bank, uint8_t port,

@@ -27,5 +27,6 @@ void gpio_set_alt(void *base, char bank, uint8_t port, uint8_t otype, uint8_t os
 void gpio_set_fmc(void *base, char bank, uint8_t port);
 void gpio_set_qspi(void *base, char bank, uint8_t port, uint8_t altfunc, uint8_t pupd);
 void gpio_set_usart(void *base, char bank, uint8_t port, uint8_t altfunc);
+void gpio_data_set(void *base, char bank, uint8_t port, int val);
 
 #endif /* _GPIO_H */
