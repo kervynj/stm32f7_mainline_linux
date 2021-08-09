@@ -1,4 +1,6 @@
-# variables and directories
+#/bin/sh
+#variables and directories
+
 PROJECT_DIR=`pwd`
 LINUX_DIR=$PROJECT_DIR/linux-5.6-rc5
 AFBOOT_DIR=$PROJECT_DIR/afboot-stm32
@@ -39,11 +41,18 @@ build_linux()
 		echo "Downloading Linux 5.6-rc5"
 		$(wget https://github.com/torvalds/linux/archive/v5.6-rc5.tar.gz)
 		tar -xzvf "v5.6-rc5.tar.gz"
+	#patch device-tree updates
+	cp configs/dtb/stm32f7-pinctrl.dtsi  $LINUX_DIR/arch/arm/boot/dts/
+	cp configs/dtb/stm32f769-disco.dts   $LINUX_DIR/arch/arm/boot/dts/
+	cp configs/dtb/stm32f746.dtsi   $LINUX_DIR/arch/arm/boot/dts/
+
 	fi
 
 	#make kernel
 	cd $LINUX_DIR
-	cp $PROJECT_DIR/configs/$BOARD .config
+	CONFIG=$PROJECT_DIR/configs/$BOARD
+	CONFIG=$CONFIG
+	cp $CONFIG .config
 	make ARCH=arm CROSS_COMPILE=$TOOLCHAIN -j 10
 	cat arch/arm/boot/xipImage > arch/arm/boot/xipImage.bin
 }
@@ -65,7 +74,7 @@ build_rootfs()
 }
 
 
-build() # $1 environement, $2 board
+build() # $1 environment, $2 board
 {
 
 	BINARY="" # binary to be flashed later if --flash exists
@@ -74,7 +83,7 @@ build() # $1 environement, $2 board
 
 		afboot)
 			build_afboot $2
-			BINARY=$PROJECT_DIR/$AFBOOT_DIR/$BOARD.bin
+			BINARY=$AFBOOT_DIR/$BOARD.bin
 			;;
 		linux)
 			build_linux
@@ -86,8 +95,8 @@ build() # $1 environement, $2 board
 			;;
 		all)
 			build_afboot $2
-			build_linux
 			build_rootfs
+			build_linux
 			BINARY=$LINUX_DIR/arch/arm/boot/xipImage.bin
 			;;
         *)
@@ -110,6 +119,7 @@ flash()
 		afboot)
 			$STLINK_DIR/build/Release/st-flash erase		
 			$STLINK_DIR/build/Release/st-flash write $FILE $ADDRESS #0x08000000	
+			$STLINK_DIR/build/Release/st-flash write $LINUX_DIR/arch/arm/boot/dts/stm32f769-disco.dtb 0x8008000	
 			;;
 		linux|all)
 			if [ "$3" = "QSPI" ]; then

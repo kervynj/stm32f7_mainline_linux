@@ -3,6 +3,5 @@
 # mount -t proc -p /proc
 
 gpioset gpiochip2 3=1 #enable GPS load switch
-sh /run/run.sh #launch all services
-stty -F /dev/ttySTM1 -echo -onlcr
-
+stty -F /dev/ttySTM1 9600 -echo -onlcr
+#sh /run/run.sh #launch all services
